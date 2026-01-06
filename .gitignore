@@ -1,0 +1,6 @@
+venv
+dev_infra/postgres_data
+.env
+*.mp3
+*.pyc
+.vscode

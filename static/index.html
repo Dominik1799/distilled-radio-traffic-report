@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destilovaný dopravný servis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+        .card-shadow {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .card-shadow-hover {
+            transition: box-shadow 0.3s ease;
+        }
+        .card-shadow-hover:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100" style="min-height: 100vh;">
+    <div x-data="trafficApp()" class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 card-shadow">
+            <div class="flex flex-col items-center space-y-6">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold mb-2">🚗 Destilovaný dopravný servis</h1>
+                    <p class="text-blue-100 text-sm font-light">Analýza a informácie o premávke z rádia express v rýchlej, ľahko strávideľnej forme</p>
+                </div>
+                <div class="flex items-center space-x-3 justify-center flex-wrap gap-3 max-w-2xl w-full">
+                    <input x-model="apiKey" type="password" placeholder="Zadajte váš kľúč API" 
+                        class="flex-1 min-w-[240px] px-4 py-3 rounded-lg bg-white bg-opacity-95 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300 transition">
+                    <button @click="refresh" :disabled="isLoading" :class="isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-50'" class="btn-ripple bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg flex items-center gap-2">
+                        <span x-show="!isLoading">↻ Obnoviť</span>
+                        <div x-show="isLoading" class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Načítavanie...</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <nav class="bg-white card-shadow sticky top-0 z-10">
+            <div class="flex justify-center space-x-2 p-4 max-w-4xl mx-auto">
+                <button @click="activeTab = 'summary'" :class="activeTab === 'summary' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" 
+                    class="px-6 py-2 rounded-lg font-medium transition duration-200">⚡ Zhrnutie</button>
+                <button @click="activeTab = 'originalText'" :class="activeTab === 'originalText' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" 
+                    class="px-6 py-2 rounded-lg font-medium transition duration-200">📖 OG Text</button>
+                <button @click="activeTab = 'audio'" :class="activeTab === 'audio' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'" 
+                    class="px-6 py-2 rounded-lg font-medium transition duration-200">📻 Zvuk</button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="flex-1 p-6 max-w-4xl mx-auto w-full">
+            <div x-show="activeTab === 'originalText'" class="bg-white rounded-2xl card-shadow p-8">
+                <p x-text="originalText" class="text-lg leading-relaxed text-gray-700"></p>
+            </div>
+            <div x-show="activeTab === 'summary'" class="bg-white rounded-2xl card-shadow p-8">
+                <!-- Categories of atomic statements -->
+                <template x-if="summary.length > 0">
+                    <div class="space-y-8">
+                        <template x-for="item in summary">
+                            <div class="pb-6 border-b border-gray-200 last:border-b-0">
+                                <h3 class="font-semibold text-xl mb-4 text-gray-800" x-text="item[0]"></h3>
+                                <ul class="space-y-3">
+                                    <template x-for="statement in item[1]">
+                                        <li class="flex items-start space-x-3">
+                                            <span class="text-blue-500 font-bold mt-1">•</span>
+                                            <span x-text="statement" class="text-gray-700 leading-relaxed"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template x-if="summary.length === 0">
+                    <div class="text-center py-12">
+                        <p class="text-gray-400 text-lg">Nie sú dostupné žiadne detaily</p>
+                    </div>
+                </template>
+            </div>
+            <div x-show="activeTab === 'audio'" class="bg-white rounded-2xl card-shadow p-8">
+                <div x-show="audioSrc" class="space-y-4">
+                    <p class="text-gray-600 font-medium">Zvuková správa</p>
+                    <audio controls class="w-full rounded-lg" style="height: 45px;" :src="audioSrc" type="audio/mpeg"></audio>
+                </div>
+                <p x-show="!audioSrc" class="text-center text-gray-400 py-12">Zvuk nie je dostupný</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-gray-200 p-8 card-shadow mt-8">
+            <div class="max-w-4xl mx-auto text-center space-y-3">
+                <p class="text-sm font-light">🌍 Zdroj údajov: Rádio expres dopravný servis audio - <a href="https://www.expres.sk/kategoria/dopravny-servis/">https://www.expres.sk/kategoria/dopravny-servis/</a></p>
+                <p class="text-sm font-light">⏱️ Posledná aktualizácia: <span x-text="lastUpdate" class="text-blue-300"></span></p>
+                <p class="text-xs text-gray-400">⚠️ Upozornenie: Informácie sú z originálnej nahrávky extrahované pomocou AI. Niektoré informácie môžu byť preto nepresné. AI má problém hlavne so skloňovaním Slovenských miest, preto mene známe lokality môžu obsahovať "preklepy"</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function trafficApp() {
+            return {
+                activeTab: 'summary',
+                apiKey: '',
+                originalText: 'Prosím, zadajte kľúč API a kliknite na tlačidlo Obnoviť',
+                summary: [['Info', ['Prosím, zadajte kľúč API a kliknite na tlačidlo Obnoviť']]],
+                audioSrc: '',
+                lastUpdate: '',
+                isLoading: false,
+                init() {
+                    // Load API key from localStorage if it exists
+                    const savedApiKey = localStorage.getItem('trafficReportApiKey');
+                    if (savedApiKey) {
+                        this.apiKey = savedApiKey;
+                    }
+                },
+                refresh() {
+                    if (this.apiKey) {
+                        localStorage.setItem('trafficReportApiKey', this.apiKey);
+                    }
+                    this.loadData();
+                },
+                async loadAudio(recordingName) {
+                    try {
+                        const headers = { 'X-Api-Key': this.apiKey };
+                        const audioResponse = await fetch(`/api/traffic-report/mp3/${recordingName}`, { headers });
+                        if (audioResponse.ok) {
+                            const blob = await audioResponse.blob();
+                            this.audioSrc = URL.createObjectURL(blob);
+                        } else {
+                            console.error('Failed to load audio');
+                            this.audioSrc = '';
+                        }
+                    } catch (error) {
+                        console.error('Error loading audio:', error);
+                        this.audioSrc = '';
+                    }
+                },
+                async loadData() {
+                    this.isLoading = true;
+                    this.originalText = 'Načítavanie najnovšej správy o premávke... Toto môže trvať až ~1 minútu';
+                    this.summary = [['Načítavanie', ['Načítavanie najnovšej správy o premávke... Toto môže trvať až ~1 minútu']]];
+                    try {
+                        const headers = { 'X-Api-Key': this.apiKey };
+                        
+                        // Fetch traffic report data
+                        const response = await fetch('/api/traffic-report', { headers });
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        const data = await response.json();
+                        
+                        this.originalText = data.transcription;
+                        
+                        // Group statements by category
+                        const categoryMap = {};
+                        data.statements.forEach(stmt => {
+                            var categoryEmojiMap = {
+                                "accident": '🚗',
+                                "delay": '⏳',
+                                "patrol": '🚔',
+                                "general warning": '⚠️'
+                            }
+                            var categoryNameMap = {
+                                "accident": 'Dopravná nehoda',
+                                "delay": 'Zdržanie',
+                                "patrol": 'Hliadka',
+                                "general warning": 'Všeobecné upozornenie'
+                            }
+                            const catTemp = categoryEmojiMap[stmt.category] + ' ' + (categoryNameMap[stmt.category] || stmt.category.charAt(0).toUpperCase() + stmt.category.slice(1))
+                            if (!categoryMap[catTemp]) {
+                                categoryMap[catTemp] = [];
+                            }
+                            categoryMap[catTemp].push(stmt.statement);
+                        });
+                        // Convert object to array of [key, value] pairs for Alpine.js iteration
+                        this.summary = Object.entries(categoryMap)
+                        console.log(this.summary)
+                        
+                        // Set audio source with API key for authenticated access
+                        // We'll use a data URL approach or fetch with headers
+                        this.audioSrc = data.recording_name;
+                        this.loadAudio(data.recording_name);
+                        
+                        this.lastUpdate = data.created_at || new Date().toLocaleString();
+                    } catch (error) {
+                        console.error('Error loading data:', error);
+                        this.originalText = `Chyba pri načítaní údajov: ${error.message}. Prosím, skontrolujte kľúč API a skúste znova.`;
+                        this.summary = [['Chyba', [`Nepodarilo sa načítať údaje: ${error.message}`]]];
+                        this.audioSrc = '';
+                        this.lastUpdate = '';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
