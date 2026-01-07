@@ -1,0 +1,7 @@
+venv
+dev_infra/
+.env
+*.mp3
+*.pyc
+.vscode
+.git
