@@ -1,4 +1,4 @@
-name: Build and deploy personal web
+name: Build and deploy traffic report web app
 
 on:
   push:
