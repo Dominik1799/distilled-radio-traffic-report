@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: traffic-report-ingress
   namespace: traffic-report
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-global-redirect-https@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
