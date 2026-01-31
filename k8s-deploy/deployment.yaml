@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: traffic-report
-          image: dominik9917/traffic-report:v-0
+          image: dominik9917/traffic-report:v-1
           ports:
             - containerPort: 8000
           envFrom:
