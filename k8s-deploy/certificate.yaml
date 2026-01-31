@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traffic-report-cert
+  namespace: traffic-report
+spec:
+  secretName: traffic-report-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: dds.dominikh.eu
+  dnsNames:
+    - dds.dominikh.eu
+    - www.dds.dominikh.eu
