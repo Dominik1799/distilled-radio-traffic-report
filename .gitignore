@@ -4,3 +4,4 @@ dev_infra/postgres_data
 *.mp3
 *.pyc
 .vscode
+k8s-deploy/secret.yaml

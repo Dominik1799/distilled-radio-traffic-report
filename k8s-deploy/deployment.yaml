@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-report-deployment
+  namespace: traffic-report
+  labels:
+    app: traffic-report
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-report
+  template:
+    metadata:
+      labels:
+        app: traffic-report
+    spec:
+      containers:
+        - name: traffic-report
+          image: dominik9917/traffic-report:v-0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: traffic-report-configmap
+            - secretRef:
+                name: traffic-report-secret
